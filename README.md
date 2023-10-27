@@ -1,5 +1,4 @@
 # MPI-Wireless-Sensor-Network
-
 #Introduction
 #Selected Charging and Base Station Simulation Architecture
 
