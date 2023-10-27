@@ -7,31 +7,70 @@
 #include <omp.h>
 #include <math.h>
 
+// Define the maximum grid dimensions.
 #define MAX_GRID_X 100
 #define MAX_GRID_Y 100
+// Define the maximum number of ports per ChargingNode.
 #define MAX_PORTS 4
 #define REPORT_INTERVAL 1
 #define SHIFT_ROW 0
 #define SHIFT_COL 1
 #define DISP 1
+// Define the value for the number of ports to consider a node full.
 #define FULL_PORT 3
+// Define the time limit for termination.
 #define TERMINATE_TIME 10
+
+/**
+ * Structure representing a charging port.
+ * @param port_id The port's unique ID.
+ * @param availability The availability status of the port.
+ */
 
 typedef struct {
     int port_id;
     int availability;
 } ChargingPort;
 
+/**
+ * Structure representing a ChargingNode.
+ * @param x The X-coordinate of the ChargingNode in the grid.
+ * @param y The Y-coordinate of the ChargingNode in the grid.
+ * @param ports An array of ChargingPort structures representing the charging ports.
+ */
 typedef struct {
     int x;
     int y;
     ChargingPort ports[MAX_PORTS];
 } ChargingNode;
 
+/**
+ * Structure for storing data for reporting.
+ * @param YYYY Year.
+ * @param MM Month.
+ * @param DD Day.
+ * @param HH Hour.
+ * @param M Minute.
+ * @param SS Second.
+ * @param Availability Availability status.
+ */
 struct Data {
     int YYYY, MM, DD, HH, M, SS, Availability;
 };
 
+/**
+ * Structure for reporting information.
+ * @param adjacent An array of adjacent nodes.
+ * @param time_taken Time taken for communication.
+ * @param sent Number of reports sent.
+ * @param received Number of reports received.
+ * @param iteration Current iteration.
+ * @param num_adj Number of adjacent nodes.
+ * @param rank Rank of the ChargingNode.
+ * @param ports Number of ports.
+ * @param adj_val An array of adjacency values.
+ * @param alert_time Alert time information.
+ */
 typedef struct {
     int adjacent[4];
     double time_taken;
@@ -45,13 +84,52 @@ typedef struct {
     char alert_time[];
 } Report;
 
+/**
+ * Simulates the behavior of a ChargingNode.
+ * @param node A pointer to the ChargingNode to simulate.
+ * @param rank The rank of the ChargingNode.
+ * @param grid_size_x The X dimension of the grid.
+ * @param grid_size_y The Y dimension of the grid.
+ * @param master_comm The master MPI communicator.
+ * @param grid_comm The grid-specific MPI communicator.
+ * @param size The total number of processes.
+ */
 void simulateChargingNode(ChargingNode *node, int rank, int grid_size_x, int grid_size_y, MPI_Comm master_comm, MPI_Comm grid_comm, int size);
+
+/**
+ * Simulates the behavior of the base station.
+ * @param rank The rank of the base station.
+ * @param num_nodes The number of ChargingNodes.
+ */
 void simulateBaseStation(int rank, int num_nodes);
+
+/**
+ * Handles the logic for the base station.
+ * @param master_comm The master MPI communicator.
+ * @param comm The MPI communicator for the base station.
+ * @param grid_size_x The X dimension of the grid.
+ * @param grid_size_y The Y dimension of the grid.
+ */
 void base_station(MPI_Comm master_comm, MPI_Comm comm, int grid_size_x, int grid_size_y);
+
+/**
+ * Handles the logic for the charging station (ChargingNode).
+ * @param master_comm The master MPI communicator.
+ * @param comm The MPI communicator for the ChargingNode.
+ * @param grid_size_x The X dimension of the grid.
+ * @param grid_size_y The Y dimension of the grid.
+ */
 void charging_station(MPI_Comm master_comm, MPI_Comm comm, int grid_size_x, int grid_size_y);
 
+// Global termination signal flag.
 int termination_signal = 0;
 
+/**
+ * The main function for the simulation.
+ * @param argc The number of command-line arguments.
+ * @param argv An array of command-line arguments.
+ * @return 0 on successful execution.
+ */
 int main(int argc, char *argv[]) {
 
     int grid_size_x, grid_size_y;
